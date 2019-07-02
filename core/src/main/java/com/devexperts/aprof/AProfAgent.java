@@ -123,7 +123,7 @@ public class AProfAgent {
 		// redefine all classes loader so far
 		redefine(transformer);
 
-		inst.addTransformer(transformer);
+		//inst.addTransformer(transformer);
 		log("Done redefining, transformer installed");
 
 		// dumping

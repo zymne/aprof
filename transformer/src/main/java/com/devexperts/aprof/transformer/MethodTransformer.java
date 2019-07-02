@@ -82,6 +82,28 @@ class MethodTransformer extends AbstractMethodVisitor {
 		if (context.isLocationStackNeeded()) {
 			int locationStack = mv.newLocal(Type.getType(LocationStack.class));
 			if (context.isMethodBodyTracked()) {
+				String locationMethod = context.getLocationMethod();
+				if(locationMethod != null && !locationMethod.equals("<init>")) {
+					String owner = context.getLocationClass().replace('.', '/');
+					mv.visitVarInsn(Opcodes.ALOAD, 0);
+					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "checkCollectionSizeLimit", "(I)V", false);
+
+//					Label afterSizeCheck = new Label();
+//
+//					mv.visitVarInsn(Opcodes.ALOAD, 0);
+//					String owner = context.getLocation();
+//					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
+//					mv.visitIntInsn(Opcodes.SIPUSH, 1000);
+//					mv.visitInsn(Opcodes.IREM);
+//					mv.visitJumpInsn(Opcodes.IFNE, afterSizeCheck);
+//					//* Inside IF block*//
+//					mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
+//					mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getStackTrace", "()[Ljava/lang/StackTraceElement;", false);
+//					//**//
+//					mv.visitLabel(afterSizeCheck);
+
+				}
 				mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "get", TransformerUtil.NOARG_RETURNS_STACK, false);
 			} else {
 				mv.visitInsn(Opcodes.ACONST_NULL);

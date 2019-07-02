@@ -22,6 +22,8 @@ package com.devexperts.aprof;
  * #L%
  */
 
+import java.util.Arrays;
+
 /**
 * @author Dmitry Paraschenko
 */
@@ -37,6 +39,15 @@ public final class LocationStack {
 
 	public static LocationStack get() {
 		return LOCATION_STACK.get();
+	}
+
+	public static void checkCollectionSizeLimit(int size) {
+		if(size > 0 && (size % 50) == 0) {
+			StackTraceElement[] s = Thread.currentThread().getStackTrace();
+			String stacktrace = Arrays.toString(s);
+			System.err.println(String.format("Current size: %s", size));
+			System.err.println(stacktrace);
+		}
 	}
 
 	public void addInvocationPoint(int loc) {

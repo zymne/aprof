@@ -84,6 +84,14 @@ class Context {
 		return location;
 	}
 
+	public String getLocationMethod() {
+		return locationMethod;
+	}
+
+	public String getLocationClass() {
+		return locationClass;
+	}
+
 	private String buildLocationString() {
 		StringBuilder sb = new StringBuilder(locationClass.length() + locationMethod.length() + 1);
 		sb.append(locationClass);
