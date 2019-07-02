@@ -170,6 +170,8 @@ public class AProfAgent {
 					continue;
 				if (!done.add(clazz))
 					continue;
+				if(!clazz.getName().equals("java.util.LinkedList"))
+					continue;
 				String name = clazz.getName().replace('.', '/');
 				InputStream is = clazz.getResourceAsStream("/" + name + ".class");
 				buf.clear();
