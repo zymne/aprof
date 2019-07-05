@@ -84,6 +84,10 @@ class Context {
 		return location;
 	}
 
+	public String getLocationDesc() {
+		return locationDesc;
+	}
+
 	public String getLocationMethod() {
 		return locationMethod;
 	}

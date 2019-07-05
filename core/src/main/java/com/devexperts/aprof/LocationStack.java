@@ -50,6 +50,15 @@ public final class LocationStack {
 		}
 	}
 
+	public static void checkCollectionSizeLimitGT(int size) {
+		if(size > 10000) {
+			StackTraceElement[] s = Thread.currentThread().getStackTrace();
+			String stacktrace = Arrays.toString(s);
+			System.err.println(String.format("Current size: %s", size));
+			System.err.println(stacktrace);
+		}
+	}
+
 	public void addInvocationPoint(int loc) {
 		if (invocation_point_count > 0) {
 			invocation_point_count++;
