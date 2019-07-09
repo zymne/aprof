@@ -8,6 +8,11 @@ public class CustomMethodAnalyzer extends AbstractMethodVisitor {
         super(mv, context, classVersion);
     }
 
+    @Override
+    protected void visitMarkCounter() {
+
+    }
+
     protected void visitMarkDeclareLocationStack() {
 
     }

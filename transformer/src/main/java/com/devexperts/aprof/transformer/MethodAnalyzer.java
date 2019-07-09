@@ -71,6 +71,9 @@ class MethodAnalyzer extends AbstractMethodVisitor {
 	}
 
 	@Override
+	protected void visitMarkCounter() { }
+
+	@Override
 	protected void visitObjectInit() {
 		requestTransformation();
 	}
