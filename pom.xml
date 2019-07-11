@@ -138,26 +138,6 @@
 					<skip>true</skip>
 				</configuration>
 			</plugin>
-			<plugin>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<configuration>
-					<rules>
-						<DependencyConvergence />
-						<requirePluginVersions>
-							<banLatest>true</banLatest>
-							<banRelease>true</banRelease>
-							<banSnapshots>true</banSnapshots>
-						</requirePluginVersions>
-					</rules>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 
 		<pluginManagement>

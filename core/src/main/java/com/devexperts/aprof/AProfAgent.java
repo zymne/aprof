@@ -158,6 +158,11 @@ public class AProfAgent {
 		throws IllegalClassFormatException, ClassNotFoundException, UnmodifiableClassException
 	{
 		StringBuilder sb = new StringBuilder();
+
+		//force loading just certain tracked classes here to avoid full processing of class loading further
+		ListIterator stub = new LinkedList().listIterator();
+		logClearSbAlways(sb.append("Calling hasNext on ListIterator with result:" + stub.hasNext()));
+
 		ArrayList<Class> classes = new ArrayList<Class>();
 		HashSet<Class> done = new HashSet<Class>();
 		FastByteBuffer buf = new FastByteBuffer();
@@ -170,7 +175,8 @@ public class AProfAgent {
 					continue;
 				if (!done.add(clazz))
 					continue;
-				if(!clazz.getName().equals("java.util.LinkedList"))
+				if(!clazz.getName().equals("java.util.LinkedList") &&
+						!clazz.getName().equals("java.util.LinkedList$LinkIterator"))
 					continue;
 				String name = clazz.getName().replace('.', '/');
 				InputStream is = clazz.getResourceAsStream("/" + name + ".class");

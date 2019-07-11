@@ -1,13 +1,23 @@
 ########################################################################################################################
 Aprof 33-SNAPSHOT, Copyright (C) 2002-2017 Devexperts LLC
-Allocation dump at 2019-07-09T19:24:20.022+0300. Uptime 73,983 ms (0h01m13s)
+Allocation dump at 2019-07-11T14:41:24.952+0300. Uptime 14,007 ms (0h00m14s)
 Arguments config.file=aprof.config:file=aprof.txt:-file.append:filecount=0:threshold=0.01:level=2:time=1m:-verbose:-verbose.redefinition:-verbose.tracked:-verbose.eliminate.allocation:-check.eliminate.allocation:log.file=:dump.classes.dir=\aprof.dumps:-skipdebug:-noframes:+reflect:-unknown:+size:exclude=:signature=java.lang.String.<init>:aggregate=sun.reflect.GeneratedSerializationConstructorAccessor,sun.reflect.GeneratedConstructorAccessor,sun.reflect.GeneratedMethodAccessor:track=:track.file=:-track.file.replace:histogram=:histogram.file=:port=0
-Transformed 1 classes and registered 16 locations in 73,766 (99.70%) ms
-Snapshot of counters was made 2 times to write file and 0 times to prevent overflow
+Transformed 2 classes and registered 32 locations in 147 (1.04%) ms
+Snapshot of counters was made 1 times to write file and 0 times to prevent overflow
 ########################################################################################################################
 
 ========================================================================================================================
-TOTAL allocation dump for 73,983 ms (0h01m13s)
+LAST allocation dump for 14,006 ms (0h00m14s)
+Allocated 0 bytes in 0 objects of 0 classes in 1 locations
+========================================================================================================================
+
+Top allocation-inducing locations with data types allocated from them
+------------------------------------------------------------------------------------------------------------------------
+Top allocated data types with reverse location traces
+------------------------------------------------------------------------------------------------------------------------
+
+========================================================================================================================
+TOTAL allocation dump for 14,007 ms (0h00m14s)
 Allocated 0 bytes in 0 objects of 0 classes in 1 locations
 ========================================================================================================================
 

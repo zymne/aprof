@@ -79,24 +79,38 @@ class MethodTransformer extends AbstractMethodVisitor {
 		mv.visitLdcInsn(Type.getObjectType(desc));
 	}
 
+	//TODO: change method name
 	@Override
 	protected void visitMarkCounter() {
 		String locationMethod = context.getLocationMethod();
 		String locationClass = context.getLocationClass();
 
-		if(locationClass !=null && locationClass.equals("java.util.LinkedList") && locationMethod != null)
-		{
-			if(locationMethod.equals("addAll")) {
-				String owner = context.getLocationClass().replace('.', '/');
-				mv.visitVarInsn(Opcodes.ALOAD, 0);
-				mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
-				//make sure counter created each time we enter addAll/readObject and not created otherwise
-				counter = mv.newLocal(Type.INT_TYPE);
-				// load value from the stack and save it in the counter variable
-				mv.storeLocal(counter);
-				//mv.visitVarInsn(Opcodes.ISTORE, counter);
+		if(locationClass != null) {
+			String owner = locationClass.replace('.', '/');
+			// Inject counter
+			if (owner.equals("java/util/LinkedList") && locationMethod != null) {
+				if (locationMethod.equals("addAll")) {
+					mv.visitVarInsn(Opcodes.ALOAD, 0);
+					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
+					//make sure counter created each time we enter addAll/readObject and not created otherwise
+					counter = mv.newLocal(Type.INT_TYPE);
+					// load value from the stack and save it in the counter variable
+					mv.storeLocal(counter);
+					//mv.visitVarInsn(Opcodes.ISTORE, counter);
+				}
+			}
+			else if(owner.equals("java/util/LinkedList$LinkIterator") && locationMethod != null) {
+				//TODO: consider moving injection right before/after 'new' operator
+				//Inject 'list.size' tracker for LinkIterator
+				if (locationMethod.equals("add")) {
+					mv.visitVarInsn(Opcodes.ALOAD, 0);
+					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "list", "Ljava/util/LinkedList;");
+					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
+					mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "checkCollectionSizeLimit", "(I)V", false);
+				}
 			}
 		}
+
 	}
 
 	//find out if the method eligible for size limit checks (method increments collection size), if so inject size limits check
