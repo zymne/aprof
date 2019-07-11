@@ -154,6 +154,14 @@ public class AProfAgent {
 			append(" ms in transformer (").append(finish - start - transformTime).append(" ms other)"));
 	}
 
+	private boolean isTracked(String cname) {
+		for(String trackedClass : config.getTrackedClasses()) {
+			if(trackedClass.equals(cname))
+				return true;
+		}
+		return false;
+	}
+
 	private void redefine(ClassFileTransformer transformer)
 		throws IllegalClassFormatException, ClassNotFoundException, UnmodifiableClassException
 	{
@@ -171,12 +179,13 @@ public class AProfAgent {
 			List<ClassDefinition> cdl = new ArrayList<ClassDefinition>(classes.size());
 			logClearSb(sb.append("Redefining classes pass #").append(pass).append("..."));
 			for (Class clazz : classes) {
+				//TODO: use special option check here (useModTrackerOnly==true), config.getAProfMode==ModTrackerOnly
+				//ModTracker redefine only tracked classes
+				if(!isTracked(clazz.getName() /*&& useModTrackerOnly==true*/))
+					continue;
 				if (clazz.isArray())
 					continue;
 				if (!done.add(clazz))
-					continue;
-				if(!clazz.getName().equals("java.util.LinkedList") &&
-						!clazz.getName().equals("java.util.LinkedList$LinkIterator"))
 					continue;
 				String name = clazz.getName().replace('.', '/');
 				InputStream is = clazz.getResourceAsStream("/" + name + ".class");

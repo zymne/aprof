@@ -260,8 +260,8 @@ public class AProfTransformer implements ClassFileTransformer {
 	}
 
 	private class ClassTransformer extends ClassVisitor {
-		private final Iterator<Context> contextIterator;
-		private final int classVersion;
+		protected final Iterator<Context> contextIterator;
+		protected final int classVersion;
 
 		public ClassTransformer(ClassVisitor cv, List<Context> contexts, int classVersion) {
 			super(TransformerUtil.ASM_API, cv);
@@ -292,6 +292,23 @@ public class AProfTransformer implements ClassFileTransformer {
 		public void visitEnd() {
 			super.visitEnd();
 			assert !contextIterator.hasNext();
+		}
+	}
+
+	private class ModTrackerClassTransformer extends ClassTransformer {
+
+		public ModTrackerClassTransformer(ClassVisitor cv, List<Context> contexts, int classVersion) {
+			super(cv, contexts, classVersion);
+		}
+
+		@Override
+		public MethodVisitor visitMethod(int access, String mname, String desc, String signature, String[] exceptions) {
+			MethodVisitor visitor = super.visitMethod(access, mname, desc, signature, exceptions);
+			visitor = new TryCatchBlockSorter(visitor, access, mname, desc, signature, exceptions);
+			Context context = contextIterator.next();
+			visitor = new ModTrackerMethodTransformer(new GeneratorAdapter(visitor, access, mname, desc), context, classVersion);
+			visitor = new JSRInlinerAdapter(visitor, access, mname, desc, signature, exceptions);
+			return visitor;
 		}
 	}
 

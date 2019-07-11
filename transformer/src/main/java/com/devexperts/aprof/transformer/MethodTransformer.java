@@ -114,6 +114,7 @@ class MethodTransformer extends AbstractMethodVisitor {
 	}
 
 	//find out if the method eligible for size limit checks (method increments collection size), if so inject size limits check
+	//TODO: avoid injecting before throw new Exception in 'add' method
 	protected void visitMarkCheckCollectionSizeLimit(String desc) {
 
 		String locationMethod = context.getLocationMethod();
@@ -190,7 +191,9 @@ class MethodTransformer extends AbstractMethodVisitor {
 		assert !context.isInternalLocation() : context;
 		startFinally = new Label();
 		pushLocationStack();
+		//регистрируем точку в методе, предварительно создав id (номер) для этой точки через AProfRegistry (реестр)
 		mv.push(AProfRegistry.registerLocation(context.getLocation()));
+		//передаем номер в addInvokedMethod
 		mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, TransformerUtil.LOCATION_STACK, "addInvokedMethod", TransformerUtil.INT_VOID, false);
 		mv.visitLabel(startFinally);
 	}
@@ -277,6 +280,7 @@ class MethodTransformer extends AbstractMethodVisitor {
 		visitMarkCheckCollectionSizeLimit(desc);
 
 		pushLocationStack();
+		//кладем на стек зарегестрированный allocationPoint на основе (desc, context.getLocation), напр. (LinkedList$Link, LinkedList.add(ILjava.lang.Object):V)
 		pushAllocationPoint(desc);
 		if (context.getConfig().isSize()) {
 			pushClass(desc);
