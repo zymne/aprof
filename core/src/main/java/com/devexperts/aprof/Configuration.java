@@ -133,6 +133,9 @@ public class Configuration {
 	@Description("Port to listen on.")
 	private int port = 0;
 
+	@Description("Set mode for tracking: allocation, modifications, both.")
+	private String track_mode = "alloc";
+
 	private DetailsConfiguration detailsConfig;
 	private HistogramConfiguration histogramConfig;
 
@@ -445,6 +448,14 @@ public class Configuration {
 				}
 			}
 		return res;
+	}
+
+	public void setTrackMode(String value) {
+		track_mode = value;
+	}
+
+	public String getTrackMode() {
+		return track_mode;
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)

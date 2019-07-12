@@ -134,6 +134,7 @@ public class AProfTransformer implements ClassFileTransformer {
 				new FrameClassWriter(cr, loader) :
 				new ClassWriter(ClassWriter.COMPUTE_MAXS);
 			ClassVisitor classTransformer = new ClassTransformer(cw, classAnalyzer.contexts, classAnalyzer.classVersion);
+
 			int transformFlags =
 				(config.isSkipDebug() ? ClassReader.SKIP_DEBUG : 0) +
 				(config.isNoFrames() || computeFrames ? ClassReader.SKIP_FRAMES : 0);
@@ -283,7 +284,10 @@ public class AProfTransformer implements ClassFileTransformer {
 			MethodVisitor visitor = super.visitMethod(access, mname, desc, signature, exceptions);
 			visitor = new TryCatchBlockSorter(visitor, access, mname, desc, signature, exceptions);
 			Context context = contextIterator.next();
-			visitor = new MethodTransformer(new GeneratorAdapter(visitor, access, mname, desc), context, classVersion);
+			if(config.getTrackMode().equals("mod"))
+				visitor = new ModTrackerMethodTransformer(new GeneratorAdapter(visitor, access, mname, desc), context, classVersion);
+			else
+				visitor = new MethodTransformer(new GeneratorAdapter(visitor, access, mname, desc), context, classVersion);
 			visitor = new JSRInlinerAdapter(visitor, access, mname, desc, signature, exceptions);
 			return visitor;
 		}
@@ -295,22 +299,6 @@ public class AProfTransformer implements ClassFileTransformer {
 		}
 	}
 
-	private class ModTrackerClassTransformer extends ClassTransformer {
-
-		public ModTrackerClassTransformer(ClassVisitor cv, List<Context> contexts, int classVersion) {
-			super(cv, contexts, classVersion);
-		}
-
-		@Override
-		public MethodVisitor visitMethod(int access, String mname, String desc, String signature, String[] exceptions) {
-			MethodVisitor visitor = super.visitMethod(access, mname, desc, signature, exceptions);
-			visitor = new TryCatchBlockSorter(visitor, access, mname, desc, signature, exceptions);
-			Context context = contextIterator.next();
-			visitor = new ModTrackerMethodTransformer(new GeneratorAdapter(visitor, access, mname, desc), context, classVersion);
-			visitor = new JSRInlinerAdapter(visitor, access, mname, desc, signature, exceptions);
-			return visitor;
-		}
-	}
 
 	private class EmptyMethodVisitor extends MethodVisitor {
 		public EmptyMethodVisitor() {
