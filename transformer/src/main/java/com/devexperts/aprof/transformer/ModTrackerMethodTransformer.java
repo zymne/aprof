@@ -28,7 +28,7 @@ public class ModTrackerMethodTransformer extends MethodVisitor {
     }
 
     protected void visitAllocateBefore(String desc) {
-        visitAllocate(desc);
+        injectSizeCheckBeforeAllocate(desc);
     }
 
     protected void visitAllocateAfter(String desc) {
@@ -45,18 +45,16 @@ public class ModTrackerMethodTransformer extends MethodVisitor {
             mv.visitTypeInsn(opcode, desc);
     }
 
-    private void visitAllocate(String desc) {
+    private void injectSizeCheckBeforeAllocate(String desc) {
         //LinkedList special check, insert size limit check if method increment collection size
-        visitMarkCheckCollectionSizeLimit(desc);
-    }
-
-    //find out if the method eligible for size limit checks (method increments collection size), if so inject size limits check
-    //TODO: avoid injecting before throw new Exception in 'add' method
-    protected void visitMarkCheckCollectionSizeLimit(String desc) {
 
         String locationMethod = context.getLocationMethod();
         String locationClass = context.getLocationClass();
         String locationDesc = context.getLocationDesc();
+
+        //skip throw new Exception allocations and etc
+        if(!desc.equals("java/util/LinkedList$Link"))
+            return;
 
         if(locationClass !=null && locationClass.equals("java.util.LinkedList") && locationMethod != null)
         {
@@ -69,20 +67,6 @@ public class ModTrackerMethodTransformer extends MethodVisitor {
                 mv.visitVarInsn(Opcodes.ALOAD, 0);
                 mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
                 mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "checkCollectionSizeLimit", "(I)V", false);
-
-//					Label afterSizeCheck = new Label();
-//
-//					mv.visitVarInsn(Opcodes.ALOAD, 0);
-//					String owner = context.getLocation();
-//					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
-//					mv.visitIntInsn(Opcodes.SIPUSH, 1000);
-//					mv.visitInsn(Opcodes.IREM);
-//					mv.visitJumpInsn(Opcodes.IFNE, afterSizeCheck);
-//					//* Inside IF block*//
-//					mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
-//					mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getStackTrace", "()[Ljava/lang/StackTraceElement;", false);
-//					//**//
-//					mv.visitLabel(afterSizeCheck);
             }
             else if(locationMethod.equals("readObject")) {
                 if(!markedReadObject) {
@@ -96,14 +80,21 @@ public class ModTrackerMethodTransformer extends MethodVisitor {
             }
             else if(locationMethod.equals("addAll")) {
                 if(desc.equals("java/util/LinkedList$Link")) {
-                    //mv.visitIincInsn(counter, 1);
-                    mv.iinc(counter, 1);
                     mv.loadLocal(counter);
                     //mv.visitVarInsn(Opcodes.ILOAD, counter);
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "checkCollectionSizeLimit", "(I)V", false);
+                    //mv.visitIincInsn(counter, 1);
+                    mv.iinc(counter, 1);
                 }
             }
         }
+    }
+
+    //find out if the method eligible for size limit checks (method increments collection size), if so inject size limits check
+    //TODO: avoid injecting before throw new Exception in 'add' method
+    protected void visitMarkCheckCollectionSizeLimit(String desc) {
+
+
     }
 
     //TODO: change method name

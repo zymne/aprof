@@ -42,7 +42,7 @@ public final class LocationStack {
 	}
 
 	public static void checkCollectionSizeLimit(int size) {
-		if(size > 0 && (size % 50) == 0) {
+		if(size > 0 && (size % 10000) == 0) {
 			StackTraceElement[] s = Thread.currentThread().getStackTrace();
 			String stacktrace = Arrays.toString(s);
 			System.err.println(String.format("Current size: %s", size));
