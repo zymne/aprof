@@ -58,6 +58,8 @@ public class AProfRegistry {
 
 	private static final AtomicInteger LAST_ROOT_INDEX = new AtomicInteger();
 
+	private static final AtomicInteger SIZE_TRACKER_STEP = new AtomicInteger(5000);
+
 	/**
 	 * Indexes can be created at any time.
 	 */
