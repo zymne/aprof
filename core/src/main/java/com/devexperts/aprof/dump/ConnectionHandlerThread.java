@@ -22,6 +22,8 @@ package com.devexperts.aprof.dump;
  * #L%
  */
 
+import com.devexperts.aprof.tracker.Tracker;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.Locale;
@@ -35,17 +37,19 @@ public class ConnectionHandlerThread extends Thread {
 	private final Socket s;
 	private final Dumper dumper;
 	private final String address;
+	private final Tracker.Configurator trackerCtrl;
 
-	public ConnectionHandlerThread(Socket s, Dumper dumper) {
-		this(s, dumper, s.getInetAddress().getHostAddress() + ":" + s.getPort());
+	public ConnectionHandlerThread(Socket s, Dumper dumper, Tracker.Configurator trackerCtrl) {
+		this(s, dumper, s.getInetAddress().getHostAddress() + ":" + s.getPort(), trackerCtrl);
 	}
 
-	private ConnectionHandlerThread(Socket s, Dumper dumper, String address) {
+	private ConnectionHandlerThread(Socket s, Dumper dumper, String address, Tracker.Configurator trackerCtrl) {
 		super("Aprof-Connection-" + address);
 		setDaemon(true);
 		this.s = s;
 		this.dumper = dumper;
 		this.address = address;
+		this.trackerCtrl = trackerCtrl;
 	}
 
 	@Override
@@ -60,6 +64,14 @@ public class ConnectionHandlerThread extends Thread {
 					sendDump(out);
 					return;
 				} else if (line.equals("BYE")) {
+					return;
+				} else if (line.startsWith("INTERVAL")) {
+					boolean success = trackerCtrl.process(line);
+					PrintWriter pw = new PrintWriter(out);
+					String msg = success ? "operation successful\r\n" : "operation failed\r\n";
+					out.write(msg.getBytes(ENCODING));
+					out.flush();
+					out.close();
 					return;
 				}
 			}

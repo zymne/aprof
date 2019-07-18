@@ -35,6 +35,8 @@ class TransformerUtil {
 	static final String APROF_OPS_INTERNAL = "com/devexperts/aprof/AProfOpsInternal";
 
 	static final String LOCATION_STACK = "com/devexperts/aprof/LocationStack";
+	static final String TRACKER = "com/devexperts/aprof/tracker/Tracker";
+
 
 	static final String OBJECT = "java/lang/Object";
 	static final String OBJECT_CLASS_NAME = "java.lang.Object";

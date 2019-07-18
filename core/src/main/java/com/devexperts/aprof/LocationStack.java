@@ -41,26 +41,6 @@ public final class LocationStack {
 		return LOCATION_STACK.get();
 	}
 
-	public static void checkCollectionSizeLimit(int size) {
-		if(size > 0 && (size % 5000) == 0) {
-			Thread currentThread = Thread.currentThread();
-			StackTraceElement[] s = currentThread.getStackTrace();
-			String stacktrace = Arrays.toString(s);
-			System.err.println(String.format("Thread name: %s, Current size: %s", currentThread.getName(), size));
-			System.err.println(stacktrace);
-		}
-	}
-
-	public static void checkCollectionSizeLimitGT(int size) {
-		if(size > 5000) {
-			Thread currentThread = Thread.currentThread();
-			StackTraceElement[] s = currentThread.getStackTrace();
-			String stacktrace = Arrays.toString(s);
-			System.err.println(String.format("Thread name: %s, Current size: %s", currentThread.getName(), size));
-			System.err.println(stacktrace);
-		}
-	}
-
 	public void addInvocationPoint(int loc) {
 		if (invocation_point_count > 0) {
 			invocation_point_count++;

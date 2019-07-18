@@ -22,6 +22,8 @@ package com.devexperts.aprof.dump;
  * #L%
  */
 
+import com.devexperts.aprof.tracker.Tracker;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -32,12 +34,14 @@ import java.net.Socket;
 public class ConnectionListenerThread extends Thread {
 	private final int port;
 	private final Dumper dumper;
+	private final Tracker.Configurator trackerCtrl;
 
-	public ConnectionListenerThread(int port, Dumper dumper) {
+	public ConnectionListenerThread(int port, Dumper dumper, Tracker.Configurator trackerCtrl) {
 		super("Aprof-ConnectionListener");
 		setDaemon(true);
 		this.port = port;
 		this.dumper = dumper;
+		this.trackerCtrl = trackerCtrl;
 	}
 
 	@Override
@@ -47,7 +51,7 @@ public class ConnectionListenerThread extends Thread {
 			while (!Thread.interrupted()) {
 				Socket s = ss.accept();
 				s.setSoTimeout(60000);
-				Thread t = new ConnectionHandlerThread(s, dumper);
+				Thread t = new ConnectionHandlerThread(s, dumper, trackerCtrl);
 				t.start();
 			}
 		} catch (IOException e) {

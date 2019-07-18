@@ -136,6 +136,9 @@ public class Configuration {
 	@Description("Set mode for tracking: allocation, modifications, both.")
 	private String track_mode = "alloc";
 
+	@Description("Tracking size interval specifies a number of elements for which we do alarm when collections grow")
+	private int interval = 50;
+
 	private DetailsConfiguration detailsConfig;
 	private HistogramConfiguration histogramConfig;
 
@@ -456,6 +459,10 @@ public class Configuration {
 
 	public String getTrackMode() {
 		return track_mode;
+	}
+
+	public int getInterval() {
+		return interval;
 	}
 
 	@Retention(RetentionPolicy.RUNTIME)

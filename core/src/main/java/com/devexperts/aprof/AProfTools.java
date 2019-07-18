@@ -51,6 +51,9 @@ public class AProfTools {
 			if ("dump".equals(command)) {
 				runDumpCommand(args);
 				return;
+			} else if("cmd".equals(command)) {
+				reconfigureTracker(args);
+				return;
 			} else if ("export".equals(command)) {
 				runExportCommand(args);
 				return;
@@ -100,6 +103,30 @@ public class AProfTools {
 		Class<?> testSuiteClass = classLoader.loadClass("com.devexperts.aprof.selftest.TestSuite");
 		Method mainMethod = testSuiteClass.getMethod("main", String[].class);
 		mainMethod.invoke(null, (Object)args);
+	}
+
+	private static void reconfigureTracker(String[] args) throws IOException, ClassNotFoundException {
+		if (args.length != 3) {
+			help();
+			return;
+		}
+		String address = args[1];
+		String command = args[2];
+		int i = address.indexOf(':');
+		String host = i < 0 ? "localhost" : address.substring(0, i);
+		int port = Integer.parseInt(address.substring(i + 1));
+		Socket socket = new Socket(host, port);
+		OutputStream outputStream = socket.getOutputStream();
+		command = command + "\r\n";
+		outputStream.write(command.getBytes(ENCODING));
+		outputStream.flush();
+		BufferedReader response = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		String resultMsg = response.readLine();
+		response.close();
+		socket.close();
+		PrintWriter out = new PrintWriter(System.out);
+		out.println(resultMsg);
+		out.flush();
 	}
 
 	private static void runDumpCommand(String[] args) throws IOException, ClassNotFoundException {

@@ -30,6 +30,7 @@ import java.util.*;
 
 import com.devexperts.aprof.dump.*;
 import com.devexperts.aprof.hotspot.CompileLogWatcher;
+import com.devexperts.aprof.tracker.Tracker;
 import com.devexperts.aprof.util.*;
 
 /**
@@ -115,6 +116,7 @@ public class AProfAgent {
 
 		AProfSizeUtil.init(inst);
 		AProfRegistry.init(config);
+		Tracker.Configurator trackerCtrl = Tracker.init(config);
 
 		Class<ClassFileTransformer> transformerClass = (Class<ClassFileTransformer>)classLoader.loadClass(TRANSFORMER_CLASS);
 		Constructor<ClassFileTransformer> transformerConstructor = transformerClass.getConstructor(Configuration.class);
@@ -145,7 +147,7 @@ public class AProfAgent {
 		// listening on port
 		if (config.getPort() > 0) {
 			logClearSb(sb.append("Listening on port ").append(config.getPort()));
-			Thread t = new ConnectionListenerThread(config.getPort(), dumper);
+			Thread t = new ConnectionListenerThread(config.getPort(), dumper, trackerCtrl);
 			t.start();
 		}
 
