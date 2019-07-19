@@ -16,7 +16,7 @@ public class Tracker {
         if(size > 0 && (size % TRACKING_SIZE_INTERVAL) == 0) {
             Thread currentThread = Thread.currentThread();
             StackTraceElement[] s = currentThread.getStackTrace();
-            String alarmMsg = formatAlarmMessage();
+            //String alarmMsg = formatAlarmMessage();
             System.err.println(String.format("Thread name: %s, Current size: %s", currentThread.getName(), size));
             System.err.println(formatStackTrace(s));
         }
@@ -31,9 +31,9 @@ public class Tracker {
         }
     }
 
-    private static String formatAlarmMessage(String threadName, int size, StackTraceElement[] st) {
-
-    }
+//    private static String formatAlarmMessage(String threadName, int size, StackTraceElement[] st) {
+//
+//    }
 
     private static String formatStackTrace(StackTraceElement[] array) {
         if (array == null) {
