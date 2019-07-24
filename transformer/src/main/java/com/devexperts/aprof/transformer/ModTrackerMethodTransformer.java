@@ -112,8 +112,8 @@ public class ModTrackerMethodTransformer extends MethodVisitor {
                 if (locationMethod.equals("add")) {
                     mv.visitVarInsn(Opcodes.ALOAD, 0);
                     mv.visitFieldInsn(Opcodes.GETFIELD, owner, "list", "Ljava/util/LinkedList;");
-                    mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
-                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "checkSizeBeforeAllocation", "(I)V", false);
+                    mv.visitFieldInsn(Opcodes.GETFIELD, "java/util/LinkedList", "size", "I");
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.TRACKER, "checkSizeBeforeAllocation", "(I)V", false);
                 }
             }
         }

@@ -119,10 +119,10 @@ public class Configuration {
 	private String[] track = new String[] {};
 
 	@Description("File name for tracked locations configuration.")
-	private String track_file = "";
+	private String track_file = "tracker.config";
 
 	@Description("Whether track.file replaces default configuration.")
-	private boolean track_file_replace = false;
+	private boolean track_file_replace = true;
 
 	@Description("Comma-separated list of array lengths which shall be shown in histograms.")
 	private int[] histogram = new int[0];
@@ -134,7 +134,7 @@ public class Configuration {
 	private int port = 0;
 
 	@Description("Set mode for tracking: allocation, modifications, both.")
-	private String track_mode = "alloc";
+	private String track_mode = "mod";
 
 	@Description("Tracking size interval specifies a number of elements for which we do alarm when collections grow")
 	private int interval = 50;
