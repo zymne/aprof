@@ -36,8 +36,6 @@ class MethodTransformer extends AbstractMethodVisitor {
 	private static final boolean COUNT_ALLOCATION_AFTER = Boolean.getBoolean("com.devexperts.aprof.countAllocationAfter");
 
 	private Label startFinally;
-	private boolean markedReadObject = false;
-	private int counter;
 
 	public MethodTransformer(GeneratorAdapter mv, Context context, int classVersion) {
 		super(mv, context, classVersion);
@@ -79,96 +77,6 @@ class MethodTransformer extends AbstractMethodVisitor {
 		mv.visitLdcInsn(Type.getObjectType(desc));
 	}
 
-	//TODO: change method name
-	@Override
-	protected void visitMarkCounter() {
-		String locationMethod = context.getLocationMethod();
-		String locationClass = context.getLocationClass();
-
-		if(locationClass != null) {
-			String owner = locationClass.replace('.', '/');
-			// Inject counter
-			if (owner.equals("java/util/LinkedList") && locationMethod != null) {
-				if (locationMethod.equals("addAll")) {
-					mv.visitVarInsn(Opcodes.ALOAD, 0);
-					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
-					//make sure counter created each time we enter addAll/readObject and not created otherwise
-					counter = mv.newLocal(Type.INT_TYPE);
-					// load value from the stack and save it in the counter variable
-					mv.storeLocal(counter);
-					//mv.visitVarInsn(Opcodes.ISTORE, counter);
-				}
-			}
-			else if(owner.equals("java/util/LinkedList$LinkIterator") && locationMethod != null) {
-				//TODO: consider moving injection right before/after 'new' operator
-				//Inject 'list.size' tracker for LinkIterator
-				if (locationMethod.equals("add")) {
-					mv.visitVarInsn(Opcodes.ALOAD, 0);
-					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "list", "Ljava/util/LinkedList;");
-					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
-					mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "checkCollectionSizeLimit", "(I)V", false);
-				}
-			}
-		}
-
-	}
-
-	//find out if the method eligible for size limit checks (method increments collection size), if so inject size limits check
-	//TODO: avoid injecting before throw new Exception in 'add' method
-	protected void visitMarkCheckCollectionSizeLimit(String desc) {
-
-		String locationMethod = context.getLocationMethod();
-		String locationClass = context.getLocationClass();
-		String locationDesc = context.getLocationDesc();
-
-		if(locationClass !=null && locationClass.equals("java.util.LinkedList") && locationMethod != null)
-		{
-
-			if(locationMethod.equals("addFirstImpl")
-					|| locationMethod.equals("addLastImpl")
-					|| ((locationMethod.equals("add") && (locationDesc.equals("(ILjava/lang/Object;)V")))))
-			{
-				String owner = context.getLocationClass().replace('.', '/');
-				mv.visitVarInsn(Opcodes.ALOAD, 0);
-				mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
-				mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "checkCollectionSizeLimit", "(I)V", false);
-
-//					Label afterSizeCheck = new Label();
-//
-//					mv.visitVarInsn(Opcodes.ALOAD, 0);
-//					String owner = context.getLocation();
-//					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
-//					mv.visitIntInsn(Opcodes.SIPUSH, 1000);
-//					mv.visitInsn(Opcodes.IREM);
-//					mv.visitJumpInsn(Opcodes.IFNE, afterSizeCheck);
-//					//* Inside IF block*//
-//					mv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Thread", "currentThread", "()Ljava/lang/Thread;", false);
-//					mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Thread", "getStackTrace", "()[Ljava/lang/StackTraceElement;", false);
-//					//**//
-//					mv.visitLabel(afterSizeCheck);
-			}
-			else if(locationMethod.equals("readObject")) {
-				if(!markedReadObject) {
-
-					String owner = context.getLocationClass().replace('.', '/');
-					mv.visitVarInsn(Opcodes.ALOAD, 0);
-					mv.visitFieldInsn(Opcodes.GETFIELD, owner, "size", "I");
-					mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "checkCollectionSizeLimitGT", "(I)V", false);
-					markedReadObject = true;
-				}
-			}
-			else if(locationMethod.equals("addAll")) {
-				if(desc.equals("java/util/LinkedList$Link")) {
-					//mv.visitIincInsn(counter, 1);
-					mv.iinc(counter, 1);
-					mv.loadLocal(counter);
-					//mv.visitVarInsn(Opcodes.ILOAD, counter);
-					mv.visitMethodInsn(Opcodes.INVOKESTATIC, TransformerUtil.LOCATION_STACK, "checkCollectionSizeLimit", "(I)V", false);
-				}
-			}
-		}
-	}
-
 	@Override
 	protected void visitMarkDeclareLocationStack() {
 		if (context.isLocationStackNeeded()) {
@@ -191,9 +99,7 @@ class MethodTransformer extends AbstractMethodVisitor {
 		assert !context.isInternalLocation() : context;
 		startFinally = new Label();
 		pushLocationStack();
-		//регистрируем точку в методе, предварительно создав id (номер) для этой точки через AProfRegistry (реестр)
 		mv.push(AProfRegistry.registerLocation(context.getLocation()));
-		//передаем номер в addInvokedMethod
 		mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, TransformerUtil.LOCATION_STACK, "addInvokedMethod", TransformerUtil.INT_VOID, false);
 		mv.visitLabel(startFinally);
 	}
@@ -268,7 +174,6 @@ class MethodTransformer extends AbstractMethodVisitor {
 		}
 	}
 
-
 	/**
 	 * OPS implementation is chosen based on the class doing the allocation.
 	 *
@@ -276,11 +181,7 @@ class MethodTransformer extends AbstractMethodVisitor {
 	 * @see com.devexperts.aprof.AProfOps#allocateSize(LocationStack, int, Class)
 	 */
 	private void visitAllocate(String desc) {
-		//LinkedList special check, insert size limit check if method increment collection size
-		visitMarkCheckCollectionSizeLimit(desc);
-
 		pushLocationStack();
-		//кладем на стек зарегестрированный allocationPoint на основе (desc, context.getLocation), напр. (LinkedList$Link, LinkedList.add(ILjava.lang.Object):V)
 		pushAllocationPoint(desc);
 		if (context.getConfig().isSize()) {
 			pushClass(desc);

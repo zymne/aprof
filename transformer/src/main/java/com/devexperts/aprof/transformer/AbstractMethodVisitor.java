@@ -27,7 +27,6 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author Dmitry Paraschenko
@@ -52,9 +51,6 @@ abstract class AbstractMethodVisitor extends MethodVisitor {
 		this.context = context;
 		this.classVersion = classVersion;
 	}
-
-
-	protected abstract void visitMarkCounter();
 
 	protected abstract void visitMarkDeclareLocationStack();
 
@@ -85,11 +81,6 @@ abstract class AbstractMethodVisitor extends MethodVisitor {
 	@Override
 	public void visitCode() {
 		mv.visitCode();
-
-		//Insert counter initialized with this.size for tracking changes inside Iterator cycle
-		//special case for (addAll, readObject)
-		visitMarkCounter();
-
 		visitMarkDeclareLocationStack();
 		if (context.isMethodBodyTracked())
 			visitStartInvokedMethod();
