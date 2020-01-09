@@ -4,8 +4,8 @@
 Цель проекта: разработка дополнительного расширения (кастомного трансформера байткода) для отслеживания операций модификации встроенных коллекций IBM JDK 6.
 
 Основные классы:
- - ModTrackerMethodTransoformer
- - ModTrackerClassTransoformer
+ - ModTrackerMethodTransformer
+ - ModTrackerClassTransformer
 
 
 Aprof - Java Memory Allocation Profiler
